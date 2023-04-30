@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>OpenLayers Map</title>
+    <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v6.5.0/css/ol.css">
+    <style>
+      .ol-popup {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 0 4px rgba(0,0,0,0.2);
+        padding: 10px;
+      }
+    </style>
+    <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v6.5.0/build/ol.js"></script>
+  </head>
+  <body>
+    <div id="map" style="width: 100%; height: 625px;"></div>
+    <div id="popup" class="ol-popup">
+      <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+      <div id="popup-content"></div>
+    </div>
+    <script>
+      var map = new ol.Map({
+        target: 'map',
+        layers: [
+          new ol.layer.Tile({
+            source: new ol.source.OSM()
+          })
+        ],
+        view: new ol.View({
+          center: ol.proj.fromLonLat([73.0551, 33.6844]),
+          zoom: 13
+        })
+      });
+
+      // Create a new overlay for the popup
+      var overlay = new ol.Overlay({
+        element: document.getElementById('popup'),
+        autoPan: true,
+        autoPanAnimation: {
+          duration: 250
+        }
+      });
+      map.addOverlay(overlay);
+
+      // Create a new click interaction to display the coordinates of the clicked location in a popup
+      map.on('click', function(event) {
+        var coordinates = event.coordinate;
+        var lonLat = ol.proj.toLonLat(coordinates);
+        var content = '<p>Clicked Location: ' + lonLat[1].toFixed(5) + ', ' + lonLat[0].toFixed(5) + '</p>';
+        content += '<p>Screen Coordinates: ' + event.pixel[0] + ', ' + event.pixel[1] + '</p>';
+        var extent = map.getView().calculateExtent(map.getSize());
+        var extentLonLat = [
+          ol.proj.transform([extent[0], extent[1]], 'EPSG:3857', 'EPSG:4326'),
+          ol.proj.transform([extent[2], extent[3]], 'EPSG:3857', 'EPSG:4326')
+        ];
+        content += '<p>NorthEast Coordinates: ' + extentLonLat[1][1].toFixed(5) + ', ' + extentLonLat[1][0].toFixed(5) + '</p>';
+        content += '<p>SouthWest Coordinates: ' + extentLonLat[0][1].toFixed(5) + ', ' + extentLonLat[0][0].toFixed(5) + '</p>';
+        document.getElementById('popup-content').innerHTML = content;
+        overlay.setPosition(coordinates);
+      });
+
+      // Add a click event to the popup's closer button to hide the popup
+      document.getElementById('popup-closer').onclick = function() {
+        overlay.setPosition(undefined);
+        return false;
+      };
+    </script>
+  </body>
+</html>

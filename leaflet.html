@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+      integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+      integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
+      crossorigin=""
+    ></script>
+    <title>Map</title>
+    <style>
+      #map {
+        height: 675px;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+      var map = L.map("map").setView([33.68, 73.04], 13);
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 13,
+        attribution:
+          '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      }).addTo(map);
+      var marker = L.marker([33.68, 73.04]).addTo(map);
+      var circle = L.circle([33.68, 73.04], {
+        color: "red",
+        fillColor: "#f03",
+        fillOpacity: 0.5,
+        radius: 2000,
+      }).addTo(map);
+      marker.bindPopup("<b>Hello world!</b><br>I am a popup.").openPopup();
+
+      var popup = L.popup();
+      var screenPopup = L.popup({
+        closeButton: false,
+        autoClose: true,
+        className: "screen-coordinates-popup",
+        offset: [0, -20], // set a negative Y offset to move the popup down
+      });
+
+      function onMapClick(e) {
+        popup
+          .setLatLng(e.latlng)
+          .setContent("You clicked the map at " + e.latlng.toString())
+          .openOn(map);
+
+        var mapBounds = map.getBounds();
+        var mapCenter = map.getCenter();
+        var zoomLevel = map.getZoom();
+
+        screenPopup
+        .setLatLng([mapBounds.getSouth(), mapCenter.lng])
+          .setContent(
+            "Screen Coordinates: " +
+              mapBounds.toBBoxString().replace(/,/g, ",<br>") + // add line break between coordinates
+              "<br>Zoom Level: " +
+              zoomLevel +
+              "<br><br>Clicked Location Coordinates: " +
+              e.latlng.toString()
+          )
+          .openOn(map);
+      }
+
+      map.on("click", onMapClick);
+    </script>
+  </body>
+</html>
